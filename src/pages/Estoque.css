@@ -1,0 +1,94 @@
+.estoque-container {
+  padding: 40px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.estoque-container h1 {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.estoque-container h2 {
+  margin-top: 32px;
+  font-size: 16px;
+}
+
+.estoque-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.estoque-form label {
+  font-size: 13px;
+  margin-bottom: 4px;
+  color: #333;
+}
+
+.estoque-form input {
+  background-color: #d9d9d9;
+  border: none;
+  border-radius: 4px;
+  padding: 10px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.estoque-form button {
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 8px;
+  align-self: center;
+  min-width: 220px;
+}
+
+.estoque-form button:hover {
+  background-color: #1d4ed8;
+}
+
+.estoque-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+}
+
+.estoque-table th,
+.estoque-table td {
+  text-align: left;
+  padding: 8px;
+  border-bottom: 1px solid #e0e0e0;
+  font-size: 13px;
+}
+
+.estoque-table th {
+  font-weight: bold;
+}
+
+.disponivel {
+  color: #16a34a;
+  font-weight: bold;
+}
+
+.baixo {
+  color: #dc2626;
+  font-weight: bold;
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  color: #2563eb;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 0;
+}
+
+.link-btn:hover {
+  text-decoration: underline;
+}
