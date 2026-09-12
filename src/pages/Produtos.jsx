@@ -3,8 +3,8 @@ import "./Produtos.css";
 
 function Produtos() {
   const [produtos, setProdutos] = useState([
-    { id: 1, nome: "Arroz", categoria: "Alimentos", preco: "25,00", estoque: 20 },
-    { id: 2, nome: "Feijão", categoria: "Alimentos", preco: "8,00", estoque: 15 },
+    { id: 1, nome: "Arroz", categoria: "Alimentos", preco: "25,00", estoque: 20, observacao: "" },
+    { id: 2, nome: "Feijão", categoria: "Alimentos", preco: "8,00", estoque: 15, observacao: "" },
   ]);
 
   const [nome, setNome] = useState("");
@@ -30,7 +30,7 @@ function Produtos() {
       setProdutos(
         produtos.map((p) =>
           p.id === editandoId
-            ? { ...p, nome, categoria, preco, estoque }
+            ? { ...p, nome, categoria, preco, estoque, observacao }
             : p
         )
       );
@@ -41,6 +41,7 @@ function Produtos() {
         categoria,
         preco,
         estoque,
+        observacao,
       };
       setProdutos([...produtos, novoProduto]);
     }
@@ -53,6 +54,7 @@ function Produtos() {
     setCategoria(produto.categoria);
     setPreco(produto.preco);
     setEstoque(produto.estoque);
+    setObservacao(produto.observacao || "");
     setEditandoId(produto.id);
   }
 

@@ -3,8 +3,8 @@ import "./Estoque.css";
 
 function Estoque() {
   const [itens, setItens] = useState([
-    { id: 1, produto: "Arroz", quantidade: 20, minima: 10 },
-    { id: 2, produto: "Feijão", quantidade: 5, minima: 10 },
+    { id: 1, produto: "Arroz", quantidade: 20, minima: 10, observacao: "" },
+    { id: 2, produto: "Feijão", quantidade: 5, minima: 10, observacao: "" },
   ]);
 
   const [produto, setProduto] = useState("");
@@ -28,7 +28,13 @@ function Estoque() {
       setItens(
         itens.map((i) =>
           i.id === editandoId
-            ? { ...i, produto, quantidade: Number(quantidade), minima: Number(minima) }
+            ? {
+                ...i,
+                produto,
+                quantidade: Number(quantidade),
+                minima: Number(minima),
+                observacao,
+              }
             : i
         )
       );
@@ -38,6 +44,7 @@ function Estoque() {
         produto,
         quantidade: Number(quantidade),
         minima: Number(minima),
+        observacao,
       };
       setItens([...itens, novoItem]);
     }
@@ -49,6 +56,7 @@ function Estoque() {
     setProduto(item.produto);
     setQuantidade(item.quantidade);
     setMinima(item.minima);
+    setObservacao(item.observacao || "");
     setEditandoId(item.id);
   }
 
