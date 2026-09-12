@@ -1,16 +1,47 @@
-# React + Vite
+# Sistema Web para Organização de Pequeno Comércio
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Projeto Integrador desenvolvido para a disciplina de Projeto Integrador, do curso de Tecnologia em Sistemas para Internet — UESPI.
 
-Currently, two official plugins are available:
+## Grupo
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Edinael de Carvalho Nunes
+- Eliade Dias Pereira
+- Juana Elen de Sousa e Silva
+- Manoel Alves Vieira Junior
+- Mikael Dias Plácido
 
-## React Compiler
+## Sobre o projeto
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Sistema para auxiliar pequenos comerciantes na gestão do dia a dia: cadastro de usuários, controle de produtos e estoque.
 
-## Expanding the ESLint configuration
+## Tecnologias utilizadas
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- React
+- Vite
+- JavaScript
+- CSS
+
+## Telas implementadas
+
+- Login
+- Cadastro de Usuários (CRUD)
+- Cadastro de Produtos (CRUD)
+- Controle de Estoque
+
+## Como rodar o projeto
+
+\`\`\`bash
+npm install
+npm run dev
+\`\`\`
+
+O projeto abrirá em `http://localhost:5173` (ou outra porta, caso esteja em uso).
+
+## Gerenciamento do projeto
+
+O board do Trello com o backlog e a organização das sprints pode ser acessado em:
+https://trello.com/b/kXcDqxvR/sistema-web-pequeno-comercio
+
+## Repositório
+
+https://github.com/mikaeldias-droid/sistema-comercio
