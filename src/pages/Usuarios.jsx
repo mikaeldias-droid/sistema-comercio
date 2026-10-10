@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { get, post } from "../services/api";
+import { get, post, put, del } from "../services/api";
 import "./Usuarios.css";
 
 function Usuarios() {
@@ -35,24 +35,24 @@ function Usuarios() {
   async function handleSubmit(e) {
     e.preventDefault();
 
-    if (editandoId) {
-      // Atualiza usuário existente (local temporário na Tarefa 3)
-      setUsuarios(
-        usuarios.map((u) =>
-          u.id === editandoId ? { ...u, nome, login, perfil } : u
-        )
-      );
-    } else {
-      // Cria novo usuário via API
-      try {
+    try {
+      if (editandoId) {
+        // Atualiza usuário existente via API
+        const payload = { nome, login, perfil };
+        if (senha.trim()) {
+          payload.senha = senha;
+        }
+        await put(`/usuarios/${editandoId}`, payload);
+      } else {
+        // Cria novo usuário via API
         await post("/usuarios", { nome, login, senha, perfil });
-        await carregarUsuarios();
-      } catch (err) {
-        console.error("Erro ao cadastrar usuário:", err);
       }
-    }
 
-    limparCampos();
+      await carregarUsuarios();
+      limparCampos();
+    } catch (err) {
+      console.error("Erro ao salvar usuário:", err);
+    }
   }
 
   function handleEditar(usuario) {
@@ -63,8 +63,13 @@ function Usuarios() {
     setEditandoId(usuario.id);
   }
 
-  function handleExcluir(id) {
-    setUsuarios(usuarios.filter((u) => u.id !== id));
+  async function handleExcluir(id) {
+    try {
+      await del(`/usuarios/${id}`);
+      await carregarUsuarios();
+    } catch (err) {
+      console.error("Erro ao excluir usuário:", err);
+    }
   }
 
   return (
