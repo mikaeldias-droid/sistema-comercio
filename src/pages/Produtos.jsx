@@ -1,11 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { get, post } from "../services/api";
 import "./Produtos.css";
 
 function Produtos() {
-  const [produtos, setProdutos] = useState([
-    { id: 1, nome: "Arroz", categoria: "Alimentos", preco: "25,00", estoque: 20, observacao: "" },
-    { id: 2, nome: "Feijão", categoria: "Alimentos", preco: "8,00", estoque: 15, observacao: "" },
-  ]);
+  const [produtos, setProdutos] = useState([]);
 
   const [nome, setNome] = useState("");
   const [categoria, setCategoria] = useState("");
@@ -13,6 +11,32 @@ function Produtos() {
   const [estoque, setEstoque] = useState("");
   const [observacao, setObservacao] = useState("");
   const [editandoId, setEditandoId] = useState(null);
+
+  function formatarPrecoParaEnvio(valor) {
+    if (typeof valor === "number") return valor;
+    const str = String(valor).trim().replace(",", ".");
+    return parseFloat(str) || 0;
+  }
+
+  function formatarPrecoExibicao(valor) {
+    if (valor === undefined || valor === null || valor === "") return "0,00";
+    const num = Number(valor);
+    if (isNaN(num)) return String(valor).replace(".", ",");
+    return num.toFixed(2).replace(".", ",");
+  }
+
+  async function carregarProdutos() {
+    try {
+      const data = await get("/produtos");
+      setProdutos(data);
+    } catch (err) {
+      console.error("Erro ao carregar produtos:", err);
+    }
+  }
+
+  useEffect(() => {
+    carregarProdutos();
+  }, []);
 
   function limparCampos() {
     setNome("");
@@ -23,27 +47,33 @@ function Produtos() {
     setEditandoId(null);
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
 
     if (editandoId) {
+      // Atualização local temporária na Tarefa 5
       setProdutos(
         produtos.map((p) =>
           p.id === editandoId
-            ? { ...p, nome, categoria, preco, estoque, observacao }
+            ? { ...p, nome, categoria, preco: formatarPrecoParaEnvio(preco), estoque, observacao }
             : p
         )
       );
     } else {
-      const novoProduto = {
-        id: Date.now(),
-        nome,
-        categoria,
-        preco,
-        estoque,
-        observacao,
-      };
-      setProdutos([...produtos, novoProduto]);
+      // Cadastro via API
+      try {
+        const payload = {
+          nome,
+          categoria,
+          preco: formatarPrecoParaEnvio(preco),
+          estoque: parseInt(estoque, 10) || 0,
+          observacao,
+        };
+        await post("/produtos", payload);
+        await carregarProdutos();
+      } catch (err) {
+        console.error("Erro ao cadastrar produto:", err);
+      }
     }
 
     limparCampos();
@@ -52,7 +82,7 @@ function Produtos() {
   function handleEditar(produto) {
     setNome(produto.nome);
     setCategoria(produto.categoria);
-    setPreco(produto.preco);
+    setPreco(formatarPrecoExibicao(produto.preco));
     setEstoque(produto.estoque);
     setObservacao(produto.observacao || "");
     setEditandoId(produto.id);
@@ -112,7 +142,7 @@ function Produtos() {
             <tr key={p.id}>
               <td>{p.nome}</td>
               <td>{p.categoria}</td>
-              <td>R$ {p.preco}</td>
+              <td>R$ {formatarPrecoExibicao(p.preco)}</td>
               <td>{p.estoque}</td>
               <td>
                 <button className="link-btn" onClick={() => handleEditar(p)}>
