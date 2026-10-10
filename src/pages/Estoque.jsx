@@ -1,17 +1,28 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { get, post, put } from "../services/api";
 import "./Estoque.css";
 
 function Estoque() {
-  const [itens, setItens] = useState([
-    { id: 1, produto: "Arroz", quantidade: 20, minima: 10, observacao: "" },
-    { id: 2, produto: "Feijão", quantidade: 5, minima: 10, observacao: "" },
-  ]);
+  const [itens, setItens] = useState([]);
 
   const [produto, setProduto] = useState("");
   const [quantidade, setQuantidade] = useState("");
   const [minima, setMinima] = useState("");
   const [observacao, setObservacao] = useState("");
   const [editandoId, setEditandoId] = useState(null);
+
+  async function carregarEstoque() {
+    try {
+      const data = await get("/estoque");
+      setItens(data);
+    } catch (err) {
+      console.error("Erro ao carregar estoque:", err);
+    }
+  }
+
+  useEffect(() => {
+    carregarEstoque();
+  }, []);
 
   function limparCampos() {
     setProduto("");
@@ -21,35 +32,30 @@ function Estoque() {
     setEditandoId(null);
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
 
-    if (editandoId) {
-      setItens(
-        itens.map((i) =>
-          i.id === editandoId
-            ? {
-                ...i,
-                produto,
-                quantidade: Number(quantidade),
-                minima: Number(minima),
-                observacao,
-              }
-            : i
-        )
-      );
-    } else {
-      const novoItem = {
-        id: Date.now(),
+    try {
+      const payload = {
         produto,
         quantidade: Number(quantidade),
         minima: Number(minima),
         observacao,
       };
-      setItens([...itens, novoItem]);
-    }
 
-    limparCampos();
+      if (editandoId) {
+        // Atualiza item existente via API
+        await put(`/estoque/${editandoId}`, payload);
+      } else {
+        // Cadastra item via API
+        await post("/estoque", payload);
+      }
+
+      await carregarEstoque();
+      limparCampos();
+    } catch (err) {
+      console.error("Erro ao salvar item de estoque:", err);
+    }
   }
 
   function handleEditar(item) {
@@ -58,10 +64,6 @@ function Estoque() {
     setMinima(item.minima);
     setObservacao(item.observacao || "");
     setEditandoId(item.id);
-  }
-
-  function getSituacao(item) {
-    return item.quantidade <= item.minima ? "Estoque baixo" : "Disponível";
   }
 
   return (
@@ -114,10 +116,10 @@ function Estoque() {
               <td>{i.quantidade}</td>
               <td
                 className={
-                  getSituacao(i) === "Estoque baixo" ? "baixo" : "disponivel"
+                  i.situacao === "Estoque baixo" ? "baixo" : "disponivel"
                 }
               >
-                {getSituacao(i)}
+                {i.situacao}
               </td>
               <td>
                 <button className="link-btn" onClick={() => handleEditar(i)}>
