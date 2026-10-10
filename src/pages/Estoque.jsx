@@ -4,6 +4,9 @@ import "./Estoque.css";
 
 function Estoque() {
   const [itens, setItens] = useState([]);
+  const [carregando, setCarregando] = useState(true);
+  const [sucesso, setSucesso] = useState("");
+  const [erro, setErro] = useState("");
 
   const [produto, setProduto] = useState("");
   const [quantidade, setQuantidade] = useState("");
@@ -12,11 +15,14 @@ function Estoque() {
   const [editandoId, setEditandoId] = useState(null);
 
   async function carregarEstoque() {
+    setCarregando(true);
     try {
       const data = await get("/estoque");
       setItens(data);
     } catch (err) {
-      console.error("Erro ao carregar estoque:", err);
+      setErro("Erro ao carregar estoque. Verifique se a API está em execução.");
+    } finally {
+      setCarregando(false);
     }
   }
 
@@ -34,6 +40,8 @@ function Estoque() {
 
   async function handleSubmit(e) {
     e.preventDefault();
+    setErro("");
+    setSucesso("");
 
     try {
       const payload = {
@@ -44,17 +52,17 @@ function Estoque() {
       };
 
       if (editandoId) {
-        // Atualiza item existente via API
         await put(`/estoque/${editandoId}`, payload);
+        setSucesso("Item de estoque atualizado com sucesso!");
       } else {
-        // Cadastra item via API
         await post("/estoque", payload);
+        setSucesso("Item de estoque cadastrado com sucesso!");
       }
 
       await carregarEstoque();
       limparCampos();
     } catch (err) {
-      console.error("Erro ao salvar item de estoque:", err);
+      setErro(err.message || "Erro ao salvar item de estoque.");
     }
   }
 
@@ -64,11 +72,25 @@ function Estoque() {
     setMinima(item.minima);
     setObservacao(item.observacao || "");
     setEditandoId(item.id);
+    setSucesso("");
+    setErro("");
   }
 
   return (
     <div className="estoque-container">
       <h1>Estoque</h1>
+
+      {sucesso && (
+        <div style={{ backgroundColor: "#ecfdf5", color: "#065f46", border: "1px solid #a7f3d0", padding: "10px 14px", borderRadius: "8px", marginBottom: "16px", fontSize: "13px" }}>
+          {sucesso}
+        </div>
+      )}
+
+      {erro && (
+        <div style={{ backgroundColor: "#fef2f2", color: "#991b1b", border: "1px solid #fecaca", padding: "10px 14px", borderRadius: "8px", marginBottom: "16px", fontSize: "13px" }}>
+          {erro}
+        </div>
+      )}
 
       <form className="estoque-form" onSubmit={handleSubmit}>
         <label>Produto</label>
@@ -100,36 +122,49 @@ function Estoque() {
       </form>
 
       <h2>Controle de estoque</h2>
-      <table className="estoque-table">
-        <thead>
-          <tr>
-            <th>Produto</th>
-            <th>Quantidade</th>
-            <th>Situação</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          {itens.map((i) => (
-            <tr key={i.id}>
-              <td>{i.produto}</td>
-              <td>{i.quantidade}</td>
-              <td
-                className={
-                  i.situacao === "Estoque baixo" ? "baixo" : "disponivel"
-                }
-              >
-                {i.situacao}
-              </td>
-              <td>
-                <button className="link-btn" onClick={() => handleEditar(i)}>
-                  Editar
-                </button>
-              </td>
+
+      {carregando ? (
+        <p style={{ color: "#6b7280", fontSize: "14px", margin: "16px 0" }}>Carregando...</p>
+      ) : (
+        <table className="estoque-table">
+          <thead>
+            <tr>
+              <th>Produto</th>
+              <th>Quantidade</th>
+              <th>Situação</th>
+              <th>Ações</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {itens.length === 0 ? (
+              <tr>
+                <td colSpan="4" style={{ textAlign: "center", color: "#6b7280", padding: "16px" }}>
+                  Nenhum item cadastrado no estoque.
+                </td>
+              </tr>
+            ) : (
+              itens.map((i) => (
+                <tr key={i.id}>
+                  <td>{i.produto}</td>
+                  <td>{i.quantidade}</td>
+                  <td
+                    className={
+                      i.situacao === "Estoque baixo" ? "baixo" : "disponivel"
+                    }
+                  >
+                    {i.situacao}
+                  </td>
+                  <td>
+                    <button className="link-btn" onClick={() => handleEditar(i)}>
+                      Editar
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }

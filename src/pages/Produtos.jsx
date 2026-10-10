@@ -4,6 +4,9 @@ import "./Produtos.css";
 
 function Produtos() {
   const [produtos, setProdutos] = useState([]);
+  const [carregando, setCarregando] = useState(true);
+  const [sucesso, setSucesso] = useState("");
+  const [erro, setErro] = useState("");
 
   const [nome, setNome] = useState("");
   const [categoria, setCategoria] = useState("");
@@ -26,11 +29,14 @@ function Produtos() {
   }
 
   async function carregarProdutos() {
+    setCarregando(true);
     try {
       const data = await get("/produtos");
       setProdutos(data);
     } catch (err) {
-      console.error("Erro ao carregar produtos:", err);
+      setErro("Erro ao carregar produtos. Verifique se a API está em execução.");
+    } finally {
+      setCarregando(false);
     }
   }
 
@@ -49,6 +55,8 @@ function Produtos() {
 
   async function handleSubmit(e) {
     e.preventDefault();
+    setErro("");
+    setSucesso("");
 
     try {
       const payload = {
@@ -60,17 +68,17 @@ function Produtos() {
       };
 
       if (editandoId) {
-        // Atualiza produto existente via API
         await put(`/produtos/${editandoId}`, payload);
+        setSucesso("Produto atualizado com sucesso!");
       } else {
-        // Cadastra novo produto via API
         await post("/produtos", payload);
+        setSucesso("Produto cadastrado com sucesso!");
       }
 
       await carregarProdutos();
       limparCampos();
     } catch (err) {
-      console.error("Erro ao salvar produto:", err);
+      setErro(err.message || "Erro ao salvar produto.");
     }
   }
 
@@ -81,20 +89,37 @@ function Produtos() {
     setEstoque(produto.estoque);
     setObservacao(produto.observacao || "");
     setEditandoId(produto.id);
+    setSucesso("");
+    setErro("");
   }
 
   async function handleExcluir(id) {
+    setErro("");
+    setSucesso("");
     try {
       await del(`/produtos/${id}`);
+      setSucesso("Produto excluído com sucesso!");
       await carregarProdutos();
     } catch (err) {
-      console.error("Erro ao excluir produto:", err);
+      setErro(err.message || "Erro ao excluir produto.");
     }
   }
 
   return (
     <div className="produtos-container">
       <h1>Produtos</h1>
+
+      {sucesso && (
+        <div style={{ backgroundColor: "#ecfdf5", color: "#065f46", border: "1px solid #a7f3d0", padding: "10px 14px", borderRadius: "8px", marginBottom: "16px", fontSize: "13px" }}>
+          {sucesso}
+        </div>
+      )}
+
+      {erro && (
+        <div style={{ backgroundColor: "#fef2f2", color: "#991b1b", border: "1px solid #fecaca", padding: "10px 14px", borderRadius: "8px", marginBottom: "16px", fontSize: "13px" }}>
+          {erro}
+        </div>
+      )}
 
       <form className="produtos-form" onSubmit={handleSubmit}>
         <label>Nome do produto</label>
@@ -127,39 +152,52 @@ function Produtos() {
       </form>
 
       <h2>Produtos cadastrados</h2>
-      <table className="produtos-table">
-        <thead>
-          <tr>
-            <th>Produto</th>
-            <th>Categoria</th>
-            <th>Preço</th>
-            <th>Estoque</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          {produtos.map((p) => (
-            <tr key={p.id}>
-              <td>{p.nome}</td>
-              <td>{p.categoria}</td>
-              <td>R$ {formatarPrecoExibicao(p.preco)}</td>
-              <td>{p.estoque}</td>
-              <td>
-                <button className="link-btn" onClick={() => handleEditar(p)}>
-                  Editar
-                </button>{" "}
-                /{" "}
-                <button
-                  className="link-btn"
-                  onClick={() => handleExcluir(p.id)}
-                >
-                  Excluir
-                </button>
-              </td>
+
+      {carregando ? (
+        <p style={{ color: "#6b7280", fontSize: "14px", margin: "16px 0" }}>Carregando...</p>
+      ) : (
+        <table className="produtos-table">
+          <thead>
+            <tr>
+              <th>Produto</th>
+              <th>Categoria</th>
+              <th>Preço</th>
+              <th>Estoque</th>
+              <th>Ações</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {produtos.length === 0 ? (
+              <tr>
+                <td colSpan="5" style={{ textAlign: "center", color: "#6b7280", padding: "16px" }}>
+                  Nenhum produto cadastrado.
+                </td>
+              </tr>
+            ) : (
+              produtos.map((p) => (
+                <tr key={p.id}>
+                  <td>{p.nome}</td>
+                  <td>{p.categoria}</td>
+                  <td>R$ {formatarPrecoExibicao(p.preco)}</td>
+                  <td>{p.estoque}</td>
+                  <td>
+                    <button className="link-btn" onClick={() => handleEditar(p)}>
+                      Editar
+                    </button>{" "}
+                    /{" "}
+                    <button
+                      className="link-btn"
+                      onClick={() => handleExcluir(p.id)}
+                    >
+                      Excluir
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }

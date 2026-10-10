@@ -4,6 +4,9 @@ import "./Usuarios.css";
 
 function Usuarios() {
   const [usuarios, setUsuarios] = useState([]);
+  const [carregando, setCarregando] = useState(true);
+  const [sucesso, setSucesso] = useState("");
+  const [erro, setErro] = useState("");
 
   const [nome, setNome] = useState("");
   const [login, setLogin] = useState("");
@@ -12,11 +15,14 @@ function Usuarios() {
   const [editandoId, setEditandoId] = useState(null);
 
   async function carregarUsuarios() {
+    setCarregando(true);
     try {
       const data = await get("/usuarios");
       setUsuarios(data);
     } catch (err) {
-      console.error("Erro ao carregar usuários:", err);
+      setErro("Erro ao carregar usuários. Verifique se a API está em execução.");
+    } finally {
+      setCarregando(false);
     }
   }
 
@@ -34,24 +40,26 @@ function Usuarios() {
 
   async function handleSubmit(e) {
     e.preventDefault();
+    setErro("");
+    setSucesso("");
 
     try {
       if (editandoId) {
-        // Atualiza usuário existente via API
         const payload = { nome, login, perfil };
         if (senha.trim()) {
           payload.senha = senha;
         }
         await put(`/usuarios/${editandoId}`, payload);
+        setSucesso("Usuário atualizado com sucesso!");
       } else {
-        // Cria novo usuário via API
         await post("/usuarios", { nome, login, senha, perfil });
+        setSucesso("Usuário cadastrado com sucesso!");
       }
 
       await carregarUsuarios();
       limparCampos();
     } catch (err) {
-      console.error("Erro ao salvar usuário:", err);
+      setErro(err.message || "Erro ao salvar usuário.");
     }
   }
 
@@ -61,20 +69,37 @@ function Usuarios() {
     setSenha("");
     setPerfil(usuario.perfil);
     setEditandoId(usuario.id);
+    setSucesso("");
+    setErro("");
   }
 
   async function handleExcluir(id) {
+    setErro("");
+    setSucesso("");
     try {
       await del(`/usuarios/${id}`);
+      setSucesso("Usuário excluído com sucesso!");
       await carregarUsuarios();
     } catch (err) {
-      console.error("Erro ao excluir usuário:", err);
+      setErro(err.message || "Erro ao excluir usuário.");
     }
   }
 
   return (
     <div className="usuarios-container">
       <h1>Usuários</h1>
+
+      {sucesso && (
+        <div style={{ backgroundColor: "#ecfdf5", color: "#065f46", border: "1px solid #a7f3d0", padding: "10px 14px", borderRadius: "8px", marginBottom: "16px", fontSize: "13px" }}>
+          {sucesso}
+        </div>
+      )}
+
+      {erro && (
+        <div style={{ backgroundColor: "#fef2f2", color: "#991b1b", border: "1px solid #fecaca", padding: "10px 14px", borderRadius: "8px", marginBottom: "16px", fontSize: "13px" }}>
+          {erro}
+        </div>
+      )}
 
       <form className="usuarios-form" onSubmit={handleSubmit}>
         <label>Nome</label>
@@ -99,37 +124,50 @@ function Usuarios() {
       </form>
 
       <h2>Usuários cadastrados</h2>
-      <table className="usuarios-table">
-        <thead>
-          <tr>
-            <th>Nome</th>
-            <th>Login</th>
-            <th>Perfil</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          {usuarios.map((u) => (
-            <tr key={u.id}>
-              <td>{u.nome}</td>
-              <td>{u.login}</td>
-              <td>{u.perfil}</td>
-              <td>
-                <button className="link-btn" onClick={() => handleEditar(u)}>
-                  Editar
-                </button>{" "}
-                /{" "}
-                <button
-                  className="link-btn"
-                  onClick={() => handleExcluir(u.id)}
-                >
-                  Excluir
-                </button>
-              </td>
+
+      {carregando ? (
+        <p style={{ color: "#6b7280", fontSize: "14px", margin: "16px 0" }}>Carregando...</p>
+      ) : (
+        <table className="usuarios-table">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Login</th>
+              <th>Perfil</th>
+              <th>Ações</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {usuarios.length === 0 ? (
+              <tr>
+                <td colSpan="4" style={{ textAlign: "center", color: "#6b7280", padding: "16px" }}>
+                  Nenhum usuário cadastrado.
+                </td>
+              </tr>
+            ) : (
+              usuarios.map((u) => (
+                <tr key={u.id}>
+                  <td>{u.nome}</td>
+                  <td>{u.login}</td>
+                  <td>{u.perfil}</td>
+                  <td>
+                    <button className="link-btn" onClick={() => handleEditar(u)}>
+                      Editar
+                    </button>{" "}
+                    /{" "}
+                    <button
+                      className="link-btn"
+                      onClick={() => handleExcluir(u.id)}
+                    >
+                      Excluir
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }
