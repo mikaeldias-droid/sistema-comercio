@@ -1,17 +1,28 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { get, post } from "../services/api";
 import "./Usuarios.css";
 
 function Usuarios() {
-  const [usuarios, setUsuarios] = useState([
-    { id: 1, nome: "Ana Souza", login: "ana.souza", perfil: "Atendente" },
-    { id: 2, nome: "Carlos Mendes", login: "carlos.mendes", perfil: "Administrador" },
-  ]);
+  const [usuarios, setUsuarios] = useState([]);
 
   const [nome, setNome] = useState("");
   const [login, setLogin] = useState("");
   const [senha, setSenha] = useState("");
   const [perfil, setPerfil] = useState("");
   const [editandoId, setEditandoId] = useState(null);
+
+  async function carregarUsuarios() {
+    try {
+      const data = await get("/usuarios");
+      setUsuarios(data);
+    } catch (err) {
+      console.error("Erro ao carregar usuários:", err);
+    }
+  }
+
+  useEffect(() => {
+    carregarUsuarios();
+  }, []);
 
   function limparCampos() {
     setNome("");
@@ -21,25 +32,24 @@ function Usuarios() {
     setEditandoId(null);
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
 
     if (editandoId) {
-      // Atualiza usuário existente
+      // Atualiza usuário existente (local temporário na Tarefa 3)
       setUsuarios(
         usuarios.map((u) =>
           u.id === editandoId ? { ...u, nome, login, perfil } : u
         )
       );
     } else {
-      // Cria novo usuário
-      const novoUsuario = {
-        id: Date.now(),
-        nome,
-        login,
-        perfil,
-      };
-      setUsuarios([...usuarios, novoUsuario]);
+      // Cria novo usuário via API
+      try {
+        await post("/usuarios", { nome, login, senha, perfil });
+        await carregarUsuarios();
+      } catch (err) {
+        console.error("Erro ao cadastrar usuário:", err);
+      }
     }
 
     limparCampos();
@@ -48,6 +58,7 @@ function Usuarios() {
   function handleEditar(usuario) {
     setNome(usuario.nome);
     setLogin(usuario.login);
+    setSenha("");
     setPerfil(usuario.perfil);
     setEditandoId(usuario.id);
   }
