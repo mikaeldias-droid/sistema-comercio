@@ -51,6 +51,8 @@ O frontend abrirá em `http://localhost:5173` (ou outra porta indicada pelo Vite
 
 > **Atenção:** Mantenha os dois terminais rodando (`npm run dev` nas duas pastas) para que o frontend consiga se comunicar com a API e salvar os dados no banco SQLite.
 
+Login inicial: usuário admin e senha 123456 (criado automaticamente pela API).
+
 ## Gerenciamento do projeto
 
 O board do Trello com o backlog e a organização das sprints pode ser acessado em:
