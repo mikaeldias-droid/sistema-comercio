@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { get, post } from "../services/api";
+import { get, post, put, del } from "../services/api";
 import "./Produtos.css";
 
 function Produtos() {
@@ -50,33 +50,28 @@ function Produtos() {
   async function handleSubmit(e) {
     e.preventDefault();
 
-    if (editandoId) {
-      // Atualização local temporária na Tarefa 5
-      setProdutos(
-        produtos.map((p) =>
-          p.id === editandoId
-            ? { ...p, nome, categoria, preco: formatarPrecoParaEnvio(preco), estoque, observacao }
-            : p
-        )
-      );
-    } else {
-      // Cadastro via API
-      try {
-        const payload = {
-          nome,
-          categoria,
-          preco: formatarPrecoParaEnvio(preco),
-          estoque: parseInt(estoque, 10) || 0,
-          observacao,
-        };
-        await post("/produtos", payload);
-        await carregarProdutos();
-      } catch (err) {
-        console.error("Erro ao cadastrar produto:", err);
-      }
-    }
+    try {
+      const payload = {
+        nome,
+        categoria,
+        preco: formatarPrecoParaEnvio(preco),
+        estoque: parseInt(estoque, 10) || 0,
+        observacao,
+      };
 
-    limparCampos();
+      if (editandoId) {
+        // Atualiza produto existente via API
+        await put(`/produtos/${editandoId}`, payload);
+      } else {
+        // Cadastra novo produto via API
+        await post("/produtos", payload);
+      }
+
+      await carregarProdutos();
+      limparCampos();
+    } catch (err) {
+      console.error("Erro ao salvar produto:", err);
+    }
   }
 
   function handleEditar(produto) {
@@ -88,8 +83,13 @@ function Produtos() {
     setEditandoId(produto.id);
   }
 
-  function handleExcluir(id) {
-    setProdutos(produtos.filter((p) => p.id !== id));
+  async function handleExcluir(id) {
+    try {
+      await del(`/produtos/${id}`);
+      await carregarProdutos();
+    } catch (err) {
+      console.error("Erro ao excluir produto:", err);
+    }
   }
 
   return (
